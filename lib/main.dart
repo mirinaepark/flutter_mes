@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'onSite.dart';
+import 'schedule.dart';
+import 'stockCheck.dart';
+import 'homePage.dart';
+
 
 void main() {
+
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  Future.delayed(const Duration(seconds: 3));
+  Future.delayed(const Duration(seconds: 1));
 
   runApp(const MyApp());
 }
@@ -37,6 +43,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  int _bottomItemIndex = 0;
+
+  static const TextStyle optionStyle =
+  TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    HomePage(),
+    OnSite(),
+    Schedule(),
+    StockCheck(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _bottomItemIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,9 +89,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ),
-              const ListTile(
-                leading: Icon(Icons.add),
-                title: Text('생산 현장 조회'),
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: const Text('생산 현장 조회'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => OnSite()));
+                },
               ),
               const ListTile(
                 leading: Icon(Icons.add),
@@ -84,19 +115,35 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      body: DefaultTextStyle.merge(
-        style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('미리내'),
-              Text('화이팅'),
-              Text('너는'),
-              Text('할 수 있어'),
-            ],
+
+      body: Center(
+        child: _widgetOptions.elementAt(_bottomItemIndex),
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.grey[350],
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "HOME",
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "생산현장",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "생산일정",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "재고관리",
+          ),
+        ],
+        currentIndex: _bottomItemIndex,
+        selectedItemColor: Colors.black,
+        onTap: _onItemTapped,
       ),
     );
   }
