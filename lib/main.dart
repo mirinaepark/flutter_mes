@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'onSite.dart';
+import 'package:flutter_mes/api/user_api.dart';
+import 'package:flutter_mes/service/user_service.dart';
+import 'models/user_model.dart';
+import 'production_status.dart';
 import 'schedule.dart';
-import 'stockCheck.dart';
-import 'homePage.dart';
-
+import 'stock_check.dart';
+import 'home_page.dart';
 
 void main() {
-
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   Future.delayed(const Duration(seconds: 1));
@@ -15,10 +16,14 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     FlutterNativeSplash.remove();
@@ -43,19 +48,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  User? user;
+  String userName = '';
+  String userNum = '';
 
   int _bottomItemIndex = 0;
 
-  static const TextStyle optionStyle =
-  TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    UserApi.getUserApi().then((value) {
+        UserService.getUserInfoById(1).then((value) {
+          setState(() {
+            user = value;
 
+            if (value != null) {
+              userName = value.name;
+              userNum = value.phone;
+            }
+          });
+        });
+    });
+  }
+
+  // BottonNabigatorBar의 Index에 따라 페이지 이동
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
-    OnSite(),
+    ProductionStatusScreen(),
     Schedule(),
     StockCheck(),
   ];
 
+  // 콜백함수
   void _onItemTapped(int index) {
     setState(() {
       _bottomItemIndex = index;
@@ -79,12 +104,12 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Container(
                 height: 130,
-                child: const DrawerHeader(
+                child: DrawerHeader(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('사원명 :'),
-                      Text('사원번호 :'),
+                      Text('사원명 : $userName'),
+                      Text('사원번호 : $userNum'),
                     ],
                   ),
                 ),
@@ -96,7 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) => OnSite()));
+                          builder: (BuildContext context) =>
+                              ProductionStatusScreen()));
                 },
               ),
               const ListTile(
@@ -115,11 +141,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-
       body: Center(
         child: _widgetOptions.elementAt(_bottomItemIndex),
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.grey[350],
@@ -130,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "생산현장",
+            label: "생산현황",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
